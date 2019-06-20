@@ -1,8 +1,6 @@
-import argparse
 import os
 import pickle
 import sys
-
 import cv2
 from matplotlib import pyplot as plt
 import numpy as np
@@ -10,7 +8,9 @@ from torchvision.transforms import functional as func_transforms
 from PIL import Image
 import torch
 
-import argutils
+#import argutils
+from mano_train.exputils import argutils
+import argparse
 from handobjectdatasets.queries import TransQueries, BaseQueries
 
 from mano_train.networks.handnet import HandNet
