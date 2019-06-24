@@ -1,6 +1,9 @@
-# Learning joint reconstruction of hands and manipulated objects
+# Learning Joint Reconstruction of Hands and Manipulated Objects - Demo, Training Code and Models
 
 Yana Hasson, Gül Varol, Dimitris Tzionas, Igor Kalevatykh, Michael J. Black,  Ivan Laptev, Cordelia Schmid, CVPR 2019
+
+- [Project page](https://hassony2.github.io/obman)
+- [Dataset repository](https://hassony2.github.io/obman)
 
 # Get the code
 
@@ -118,9 +121,10 @@ Note that the video demo has some lag time, which comes from the visualization b
 ![mug](readme_assets/images/mug.png)
 
 - the model is trained only on hands holding objects, and therefore doesn't perform well on hands in the absence of objects for poses that do not resemble common grasp poses.
-- the mdoel is trained on grasping hands only, and therefore struggles with hand poses that are associated with object-handling
+- the model is trained on grasping hands only, and therefore struggles with hand poses that are associated with object-handling
   - In addition to the models, we also provide a hand-only model trained on various hand datasets, including our ObMan dataset, that captures a wider variety of hand poses
   - to try it, launch `python webcam_demo.py --resume release_models/hands_only/checkpoint.pth.tar`
+  - Note that this model also regresses a translation and scale parameter that allows to overlay the predicted 2D joints on the images according to an orthographic projection model
 
 ## Training
 

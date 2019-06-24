@@ -12,6 +12,7 @@ from mano_train.exputils import argutils
 import argparse
 
 from handobjectdatasets.queries import TransQueries, BaseQueries
+from handobjectdatasets.viz2d import visualize_joints_2d_cv2
 
 from mano_train.exputils import argutils
 from mano_train.netscripts.reload import reload_model
@@ -98,7 +99,6 @@ if __name__ == "__main__":
         frame = preprocess_frame(frame)
         input_image = prepare_input(frame)
         blend_img_hand = attention_hand.blend_map(frame)
-        cv2.imshow("attention hand", blend_img_hand)
         if has_atlas_encoder:
             blend_img_atlas = attention_atlas.blend_map(frame)
             cv2.imshow("attention atlas", blend_img_atlas)
@@ -108,6 +108,15 @@ if __name__ == "__main__":
             hand_crop, flip_left_right=args.flip_left_right
         )
         output = forward_pass_3d(model, hand_image, hand_side=args.hand_side)
+
+        if "joints2d" in output:
+            joints2d = output["joints2d"]
+            frame = visualize_joints_2d_cv2(
+                frame, joints2d.cpu().detach().numpy()[0]
+            )
+
+        cv2.imshow("attention hand", blend_img_hand)
+
         verts = output["verts"].cpu().detach().numpy()[0]
         ax = fig.add_subplot(1, 1, 1, projection="3d")
         displaymano.add_mesh(ax, verts, faces, flip_x=True)
