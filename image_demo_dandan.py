@@ -1,8 +1,6 @@
 import argparse
-from copy import deepcopy
-import os
+import os, glob
 import pickle
-import glob
 from tqdm import tqdm
 
 import cv2
@@ -11,7 +9,6 @@ import numpy as np
 from PIL import Image
 
 from handobjectdatasets.queries import TransQueries, BaseQueries
-from handobjectdatasets.viz2d import visualize_joints_2d_cv2
 
 from mano_train.exputils import argutils
 from mano_train.netscripts.reload import reload_model
@@ -71,23 +68,24 @@ if __name__ == "__main__":
     with open("misc/mano/MANO_RIGHT.pkl", "rb") as p_f:
         mano_right_data = pickle.load(p_f, encoding="latin1")
         faces = mano_right_data["f"]
-
+    
     #======== test ========#
-    output_folder = "./output_image/frame_HD_centered_hand_50_left_handonly_align2D_2"
+    output_folder = "./output_image/frame_HD_centered_hand_50_left"
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
     image_list = glob.glob("/x/dandans/Dataset/frame_HD_centered_hand_50_left/*.jpg")
     image_list.sort()
     for image_path in tqdm(image_list):
-
         image_name = image_path.split("/")[-1]
         output_name = image_name[:-4] + "_obman"
 
-        fig = plt.figure(figsize=(6, 4))
+        fig = plt.figure(figsize=(10, 4))
         fig.clf()
         frame = cv2.imread(image_path)
         frame = preprocess_frame(frame)
         input_image = prepare_input(frame)
+        #cv2.imshow("input", frame)
+        #cv2.imwrite("./output_image/image_demo_input.jpg", frame)
         img = Image.fromarray(frame.copy())
         hand_crop = cv2.resize(np.array(img), (256, 256))
 
@@ -95,10 +93,17 @@ if __name__ == "__main__":
         flip_hand_image = prepare_input(hand_crop, flip_left_right=True)
         noflip_output = forward_pass_3d(model, noflip_hand_image)
         flip_output = forward_pass_3d(model, flip_hand_image)
+
         flip_verts = flip_output["verts"].cpu().detach().numpy()[0]
         noflip_verts = noflip_output["verts"].cpu().detach().numpy()[0]
-        # ax = fig.add_subplot(2, 2, 2, projection="3d")
+        #print(flip_verts)
+        ax = fig.add_subplot(1, 2, 1)
+        ax.title.set_text("input image")
+        image_show = np.flip(frame, axis=2).copy()
+        image_show = np.flip(image_show, axis=1).copy()
+        plt.imshow(image_show)
 
+        # ax = fig.add_subplot(1, 3, 2, projection="3d")
         # ax.title.set_text("flipped input")
         # displaymano.add_mesh(ax, flip_verts, faces, flip_x=True)
         # if "objpoints3d" in flip_output:
@@ -106,15 +111,6 @@ if __name__ == "__main__":
         #     displaymano.add_mesh(
         #         ax, objverts, flip_output["objfaces"], flip_x=True, c="r"
         #     )
-        # flip_inpimage = deepcopy(np.flip(hand_crop, axis=1))
-        # if "joints2d" in flip_output:
-        #     joints2d = flip_output["joints2d"]
-        #     flip_inpimage = visualize_joints_2d_cv2(
-        #         flip_inpimage, joints2d.cpu().detach().numpy()[0]
-        #     )
-        # ax = fig.add_subplot(2, 2, 1)
-        # ax.imshow(np.flip(flip_inpimage[:, :, ::-1], axis=1))
-
         ax = fig.add_subplot(1, 2, 2, projection="3d")
         ax.title.set_text("unflipped input")
         displaymano.add_mesh(ax, noflip_verts, faces, flip_x=True)
@@ -123,14 +119,5 @@ if __name__ == "__main__":
             displaymano.add_mesh(
                 ax, objverts, noflip_output["objfaces"], flip_x=True, c="r"
             )
-        noflip_inpimage = deepcopy(hand_crop)
-        if "joints2d" in flip_output:
-            joints2d = noflip_output["joints2d"]
-            noflip_inpimage = visualize_joints_2d_cv2(
-                noflip_inpimage, joints2d.cpu().detach().numpy()[0]
-            )
-        ax = fig.add_subplot(1, 2, 1)
-        ax.imshow(np.flip(noflip_inpimage[:, :, ::-1], axis=1))
-
         plt.savefig(f"./{output_folder}/{output_name}.jpg")
-        #plt.show()
+

@@ -7,6 +7,9 @@ checkpoints/
 checkpoints2
 tmp/
 debug/
+misc/
+output_image/
+release_models/
 
 __pycache__/
 .pytest_cache/
